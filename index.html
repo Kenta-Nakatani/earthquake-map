@@ -201,9 +201,15 @@
                 return response.json();
             })
             .then(earthquakeData => {
+                // マグニチュード2以下を除外したデータを作成
+                const filteredEarthquakeData = {
+                    ...earthquakeData,
+                    features: earthquakeData.features.filter(feature => feature.properties.mag > 2)
+                };
+
                 map.on('load', () => {
                     // 地震データをソースとして追加
-                    map.addSource('earthquakes', { "type": "geojson", "data": earthquakeData });
+                    map.addSource('earthquakes', { "type": "geojson", "data": filteredEarthquakeData });
 
                     // 地震の規模に応じた円を描画
                     map.addLayer({
@@ -266,8 +272,7 @@
                     });
 
                     // すべての地震情報をリストに追加（新しい順にソートし、マグニチュード2以下を除外）
-                    const sortedFeatures = earthquakeData.features
-                        .filter(feature => feature.properties.mag > 2) // マグニチュード2以下を除外
+                    const sortedFeatures = filteredEarthquakeData.features
                         .sort((a, b) => {
                             return new Date(b.properties.time) - new Date(a.properties.time); // 降順に変更
                         });
@@ -408,7 +413,7 @@
             });
 
             // ラベルのテキストを更新
-            togglePlateLabel.textContent = `プレート表示: ${plateVisible ? 'ON' : 'OFF'}`;
+            togglePlateLabel.textContent = `plate: ${plateVisible ? 'ON' : 'OFF'}`;
         });
     </script>
 </body>
